@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	game := hangman.NewHangmanGame(6)
+	game := hangman.NewGame(6)
 	game.Play()
 }

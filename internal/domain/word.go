@@ -10,7 +10,7 @@ type Word struct {
 	GuessedLetters      []bool
 }
 
-func (*Word) NewWord(word string, level string, category string) Word {
+func (*Word) NewWord(word, level, category string) Word {
 	return Word{Word: []rune(word),
 		Difficulty:          level,
 		Category:            category,

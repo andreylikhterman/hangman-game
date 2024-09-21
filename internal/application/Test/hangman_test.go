@@ -3,7 +3,7 @@ package hangman_test
 import (
 	"testing"
 
-	game "github.com/backend-academy-2024-go-template/internal/application"
+	gamepkg "github.com/backend-academy-2024-go-template/internal/application"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,31 +29,31 @@ var categories = []string{"животные", "еда", "техника"}
 var levels = []string{"легкий", "средний", "сложный"}
 
 func TestSelectCategory(t *testing.T) {
-	game := game.NewHangmanGame(5)
+	game := gamepkg.NewGame(5)
 
-	category := game.SelectCategory("1")
+	category := game.SelectCategory(1)
 	assert.Equal(t, "животные", category, "Ожидалась категория 'животные'")
 
-	category = game.SelectCategory("")
+	category = game.SelectCategory(13)
 	assert.Contains(t, categories, category, "Выбрана неверная категория")
 }
 
 func TestSelectLevel(t *testing.T) {
-	game := game.NewHangmanGame(5)
+	game := gamepkg.NewGame(5)
 
-	level := game.SelectLevel("2")
+	level := game.SelectLevel(2)
 	assert.Equal(t, "средний", level, "Ожидался уровень 'средний'")
 
-	level = game.SelectLevel("")
+	level = game.SelectLevel(14)
 	assert.Contains(t, levels, level, "Выбран неверный уровень")
 }
 
 func TestSelectWord(t *testing.T) {
-	game.NewHangmanGame(5)
+	gamepkg.NewGame(5)
 
 	category := "животные"
 	level := "легкий"
 
-	_, randomWord := game.RandomElememt(dictionary[category][level])
+	_, randomWord := gamepkg.RandomElememt(dictionary[category][level])
 	assert.Contains(t, dictionary[category][level], randomWord, "Слово не принадлежит к категории и уровню")
 }

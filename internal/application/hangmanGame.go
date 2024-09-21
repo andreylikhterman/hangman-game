@@ -2,9 +2,9 @@ package hangman
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	models "github.com/backend-academy-2024-go-template/internal/domain"
 )
@@ -78,48 +78,55 @@ var hints = map[string]string{
 var categories = []string{"животные", "еда", "техника"}
 var levels = []string{"легкий", "средний", "сложный"}
 
-type HangmanGame struct {
+type Game struct {
 	words   map[string]map[string][]string
 	hints   map[string]string
 	word    models.Word
 	player  models.Player
-	windows models.HangmanWindows
+	windows models.Windows
 }
 
-func NewHangmanGame(attempts int) *HangmanGame {
-	return &HangmanGame{
+func NewGame(attempts int) *Game {
+	game := &Game{
 		words: dictionary,
 		hints: hints,
 		player: models.Player{
 			CountAttempts: attempts,
 		},
-		windows: models.HangmanWindows{
+		windows: models.Windows{
 			HangmanStages: models.Stages,
 		},
 	}
+	game.player.Window = &(game.windows)
+
+	return game
 }
 
-func RandomElememt(array []string) (int64, string) {
-	index := time.Now().Unix() % int64(len(array))
+func RandomElememt(array []string) (index int64, element string) {
+	index = time.Now().Unix() % int64(len(array))
 	return index, array[index]
 }
 
-func (game *HangmanGame) SelectCategory(category string) string {
+func (game *Game) SelectCategory(category int) string {
 	var index int64
-	if number, err := strconv.Atoi(category); err == nil && number > 0 && number <= len(categories) {
-		index = int64(number - 1)
+	if category > 0 && category <= len(categories) {
+		index = int64(category - 1)
 	} else {
 		index, _ = RandomElememt(categories)
 	}
+
 	game.player.CountAttempts += int(1 - index)
+
 	return categories[index]
 }
 
-func (game *HangmanGame) SelectLevel(level string) string {
-	if number, err := strconv.Atoi(level); err == nil && number > 0 && number <= len(levels) {
-		return levels[number-1]
+func (game *Game) SelectLevel(level int) string {
+	if level > 0 && level <= len(levels) {
+		return levels[level-1]
 	}
+
 	index, _ := RandomElememt(levels)
+
 	return levels[index]
 }
 
@@ -129,24 +136,25 @@ func contains(array []rune, element rune) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
-func (game *HangmanGame) selectLevelAndCategory() {
+func (game *Game) selectLevelAndCategory() {
 	game.windows.SelectLevel()
 	level := game.player.ChooseLevel()
 	game.windows.SelectCategory()
 	category := game.player.ChooseCategory()
 
-	level = game.SelectLevel(level)
-	category = game.SelectCategory(category)
+	correctLevel := game.SelectLevel(level)
+	correctCategory := game.SelectCategory(category)
 
-	_, randomWord := RandomElememt(game.words[category][level])
-	game.word = game.word.NewWord(randomWord, level, category)
+	_, randomWord := RandomElememt(game.words[correctCategory][correctLevel])
+	game.word = game.word.NewWord(randomWord, correctCategory, correctLevel)
 }
 
-func (game *HangmanGame) displayInitialData() {
-	word := []rune(game.word.Word)
+func (game *Game) displayInitialData() {
+	word := game.word.Word
 	game.windows.MainWindow()
 	game.windows.Cursor.ToWord()
 	fmt.Print(strings.Repeat("_", len(word)))
@@ -155,7 +163,7 @@ func (game *HangmanGame) displayInitialData() {
 	game.windows.Cursor.ToInput()
 }
 
-func (game *HangmanGame) handleUserInput(char string) {
+func (game *Game) handleUserInput(char string) {
 	game.windows.Cursor.ToInput()
 	game.windows.ClearText(char)
 
@@ -164,15 +172,17 @@ func (game *HangmanGame) handleUserInput(char string) {
 		return
 	}
 
-	letter := []rune(strings.ToLower(char))[0]
+	letter, _ := utf8.DecodeRuneInString(strings.ToLower(char))
+
 	game.windows.Cursor.ToWord()
 
-	if contains(game.word.Word, letter) {
+	switch {
+	case contains(game.word.Word, letter):
 		game.word.UpdateGuessedLetters(letter)
-	} else if char == "?" {
+	case char == "?":
 		hint := game.hints[string(game.word.Word)]
 		game.windows.ShowHint(hint)
-	} else {
+	default:
 		game.decrementAttempts()
 	}
 
@@ -180,31 +190,36 @@ func (game *HangmanGame) handleUserInput(char string) {
 	game.windows.Cursor.ToInput()
 }
 
-func (game *HangmanGame) decrementAttempts() {
+func (game *Game) decrementAttempts() {
 	game.player.CountAttempts--
 	game.windows.Cursor.ToAttempts()
 	fmt.Print(game.player.CountAttempts)
 	game.windows.DrawHangman(game.player.CountAttempts)
 }
 
-func (game *HangmanGame) endGame() {
+func (game *Game) endGame() {
 	if game.player.CountAttempts == 0 {
 		game.windows.Loss()
 	} else {
 		game.windows.Win()
 	}
+
 	time.Sleep(2 * time.Second)
+
 	game.windows.CleanScreen()
 }
 
-func (game *HangmanGame) Play() {
+func (game *Game) Play() {
 	game.windows.Start()
 	game.selectLevelAndCategory()
 	game.displayInitialData()
 
-	for game.player.CountAttempts > 0 && game.word.CountGuessedLetters != int8(len(game.word.Word)) {
+	for game.player.CountAttempts > 0 && int(game.word.CountGuessedLetters) != len(game.word.Word) {
 		var char string
-		fmt.Scan(&char)
+		if _, err := fmt.Scan(&char); err != nil {
+			fmt.Print("")
+		}
+
 		game.handleUserInput(char)
 	}
 

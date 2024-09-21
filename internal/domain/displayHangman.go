@@ -8,7 +8,7 @@ import (
 	output "github.com/backend-academy-2024-go-template/internal/infrastructure"
 )
 
-const strikethrought_text string = "а̶б̶в̶г̶д̶е̶ж̶з̶и̶й̶к̶л̶м̶н̶о̶п̶р̶с̶т̶у̶ф̶х̶ц̶ч̶ш̶щ̶ъ̶ы̶ь̶э̶ю̶я̶"
+const strikethroughtText string = "а̶б̶в̶г̶д̶е̶ж̶з̶и̶й̶к̶л̶м̶н̶о̶п̶р̶с̶т̶у̶ф̶х̶ц̶ч̶ш̶щ̶ъ̶ы̶ь̶э̶ю̶я̶"
 
 var Stages = []string{
 	`
@@ -158,68 +158,74 @@ func (*cursor) Right(count rune) {
 	fmt.Printf("\033[%dC", count)
 }
 
-type HangmanWindows struct {
+type Windows struct {
 	HangmanStages []string
 	Cursor        cursor
 }
 
-func (*HangmanWindows) CleanScreen() {
+func (*Windows) CleanScreen() {
 	fmt.Print("\033[H\033[2J")
 }
 
-func (hangman_windows *HangmanWindows) Start() {
-	hangman_windows.CleanScreen()
-	hangman_windows.Cursor.HideCursor()
+func (window *Windows) Start() {
+	window.CleanScreen()
+	window.Cursor.HideCursor()
 	output.PrintWindow("start.txt")
 	time.Sleep(time.Second)
 }
 
-func (hangman_windows *HangmanWindows) SelectLevel() {
-	hangman_windows.CleanScreen()
+func (window *Windows) SelectLevel() {
+	window.CleanScreen()
 	output.PrintWindow("level.txt")
-	hangman_windows.Cursor.ToChoose()
-	hangman_windows.Cursor.ChangeCursor()
-	hangman_windows.Cursor.ShowCursor()
+	window.Cursor.ToChoose()
+	window.Cursor.ChangeCursor()
+	window.Cursor.ShowCursor()
 }
 
-func (hangman_windows *HangmanWindows) SelectCategory() {
-	hangman_windows.CleanScreen()
+func (window *Windows) SelectCategory() {
+	window.CleanScreen()
 	output.PrintWindow("category.txt")
-	hangman_windows.Cursor.ToChoose()
+	window.Cursor.ToChoose()
 }
 
-func (hangman_windows *HangmanWindows) MainWindow() {
-	hangman_windows.CleanScreen()
+func (window *Windows) MainWindow() {
+	window.CleanScreen()
 	output.PrintWindow("game.txt")
 }
 
-func (hangman_windows *HangmanWindows) DrawHangman(count_attemts int) {
-	hangman_windows.Cursor.ToHangman()
-	current_stage := Stages[len(Stages)-count_attemts-1]
-	lines := strings.Split(current_stage, "\n")
+func (window *Windows) DrawHangman(countAttempts int) {
+	window.Cursor.ToHangman()
+
+	currentStage := Stages[len(Stages)-countAttempts-1]
+	lines := strings.Split(currentStage, "\n")
+
 	for index, line := range lines {
 		fmt.Print(line)
-		hangman_windows.Cursor.ToHangman()
-		hangman_windows.Cursor.Down(rune(index + 1))
+		window.Cursor.ToHangman()
+		window.Cursor.Down(rune(index + 1))
 	}
 }
 
-func (hangman_windows *HangmanWindows) CrossOutLetter(char rune) {
-	hangman_windows.Cursor.ToAlphabet()
-	const count_row rune = 7
-	letter_number := (char - 'а')
-	if letter_number >= 0 && letter_number <= 32 {
-		if letter_number%count_row == 0 {
-			hangman_windows.Cursor.Down((letter_number/count_row)*2 + 1)
+func (window *Windows) CrossOutLetter(char rune) {
+	window.Cursor.ToAlphabet()
+
+	const countRow rune = 7
+
+	letterNumber := (char - 'а')
+
+	if letterNumber >= 0 && letterNumber <= 32 {
+		if letterNumber%countRow == 0 {
+			window.Cursor.Down((letterNumber/countRow)*2 + 1)
 		} else {
-			hangman_windows.Cursor.Down((letter_number/count_row)*2 + 1)
-			hangman_windows.Cursor.Right((letter_number % count_row) * 2)
+			window.Cursor.Down((letterNumber/countRow)*2 + 1)
+			window.Cursor.Right((letterNumber % countRow) * 2)
 		}
-		fmt.Print(string([]rune(strikethrought_text)[letter_number*2 : letter_number*2+2]))
+
+		fmt.Print(string([]rune(strikethroughtText)[letterNumber*2 : letterNumber*2+2]))
 	}
 }
 
-func (window *HangmanWindows) ShowHint(hint string) {
+func (window *Windows) ShowHint(hint string) {
 	window.Cursor.ToHint("? - подсказка")
 	window.ClearText("? - подсказка")
 	window.Cursor.ToHint(hint)
@@ -232,18 +238,18 @@ func (window *HangmanWindows) ShowHint(hint string) {
 	fmt.Print("? - подсказка")
 }
 
-func (*HangmanWindows) ClearText(text string) {
+func (*Windows) ClearText(text string) {
 	for i := 0; i < len([]rune(text)); i++ {
 		fmt.Print(" ")
 	}
 }
 
-func (hangman_windows *HangmanWindows) Win() {
-	hangman_windows.CleanScreen()
+func (window *Windows) Win() {
+	window.CleanScreen()
 	output.PrintWindow("win.txt")
 }
 
-func (hangman_windows *HangmanWindows) Loss() {
-	hangman_windows.CleanScreen()
+func (window *Windows) Loss() {
+	window.CleanScreen()
 	output.PrintWindow("loss.txt")
 }
