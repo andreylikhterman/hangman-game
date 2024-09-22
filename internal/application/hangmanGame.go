@@ -97,7 +97,6 @@ func NewGame(attempts int) *Game {
 			HangmanStages: models.Stages,
 		},
 	}
-	game.player.Window = &(game.windows)
 
 	return game
 }
@@ -107,25 +106,25 @@ func RandomElememt(array []string) (index int64, element string) {
 	return index, array[index]
 }
 
-func (game *Game) SelectCategory(category int) string {
+func (game *Game) SelectCategory(category int, err error) string {
+	if err == nil && category > 0 && category <= len(categories) {
+		return categories[category-1]
+	}
+
+	_, element := RandomElememt(categories)
+
+	return element
+}
+
+func (game *Game) SelectLevel(level int, err error) string {
 	var index int64
-	if category > 0 && category <= len(categories) {
-		index = int64(category - 1)
+	if err == nil && level > 0 && level <= len(levels) {
+		index = int64(level) - 1
 	} else {
-		index, _ = RandomElememt(categories)
+		index, _ = RandomElememt(levels)
 	}
 
 	game.player.CountAttempts += int(1 - index)
-
-	return categories[index]
-}
-
-func (game *Game) SelectLevel(level int) string {
-	if level > 0 && level <= len(levels) {
-		return levels[level-1]
-	}
-
-	index, _ := RandomElememt(levels)
 
 	return levels[index]
 }
@@ -142,12 +141,11 @@ func contains(array []rune, element rune) bool {
 
 func (game *Game) selectLevelAndCategory() {
 	game.windows.SelectLevel()
-	level := game.player.ChooseLevel()
+	level, err := game.player.ChooseLevel()
+	correctLevel := game.SelectLevel(level, err)
 	game.windows.SelectCategory()
-	category := game.player.ChooseCategory()
-
-	correctLevel := game.SelectLevel(level)
-	correctCategory := game.SelectCategory(category)
+	category, err := game.player.ChooseCategory()
+	correctCategory := game.SelectCategory(category, err)
 
 	_, randomWord := RandomElememt(game.words[correctCategory][correctLevel])
 	game.word = game.word.NewWord(randomWord, correctCategory, correctLevel)
@@ -179,10 +177,10 @@ func (game *Game) handleUserInput(char string) {
 	switch {
 	case contains(game.word.Word, letter):
 		game.word.UpdateGuessedLetters(letter)
-	case char == "?":
+	case letter == '?':
 		hint := game.hints[string(game.word.Word)]
 		game.windows.ShowHint(hint)
-	default:
+	case letter-'а' >= 0 && letter-'а' <= 32:
 		game.decrementAttempts()
 	}
 
