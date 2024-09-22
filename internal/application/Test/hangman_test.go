@@ -31,20 +31,20 @@ var levels = []string{"легкий", "средний", "сложный"}
 func TestSelectCategory(t *testing.T) {
 	game := gamepkg.NewGame(5)
 
-	category := game.SelectCategory(1)
+	category := game.SelectCategory(1, nil)
 	assert.Equal(t, "животные", category, "Ожидалась категория 'животные'")
 
-	category = game.SelectCategory(13)
+	category = game.SelectCategory(13, nil)
 	assert.Contains(t, categories, category, "Выбрана неверная категория")
 }
 
 func TestSelectLevel(t *testing.T) {
 	game := gamepkg.NewGame(5)
 
-	level := game.SelectLevel(2)
+	level := game.SelectLevel(2, nil)
 	assert.Equal(t, "средний", level, "Ожидался уровень 'средний'")
 
-	level = game.SelectLevel(14)
+	level = game.SelectLevel(14, nil)
 	assert.Contains(t, levels, level, "Выбран неверный уровень")
 }
 
