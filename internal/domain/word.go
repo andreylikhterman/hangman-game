@@ -24,6 +24,7 @@ func (word *Word) UpdateGuessedLetters(char rune) {
 			if !word.GuessedLetters[index] {
 				word.CountGuessedLetters++
 			}
+			
 			word.GuessedLetters[index] = true
 		}
 
