@@ -20,11 +20,8 @@ func (*Word) NewWord(word, level, category string) Word {
 
 func (word *Word) UpdateGuessedLetters(char rune) {
 	for index, letter := range word.Word {
-		if letter == char {
-			if !word.GuessedLetters[index] {
-				word.CountGuessedLetters++
-			}
-			
+		if letter == char && !word.GuessedLetters[index] {
+			word.CountGuessedLetters++
 			word.GuessedLetters[index] = true
 		}
 
