@@ -6,7 +6,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	models "github.com/backend-academy-2024-go-template/internal/domain"
+	"hangman/internal/domain"
+	"hangman/pkg/random"
+	"hangman/pkg/slice"
 )
 
 var dictionary = map[string]map[string][]string{
@@ -81,29 +83,41 @@ var levels = []string{"легкий", "средний", "сложный"}
 type Game struct {
 	words   map[string]map[string][]string
 	hints   map[string]string
-	word    models.Word
-	player  models.Player
-	windows models.Windows
+	word    domain.Word
+	player  domain.Player
+	windows domain.Windows
 }
 
 func NewGame(attempts int) *Game {
 	game := &Game{
 		words: dictionary,
 		hints: hints,
-		player: models.Player{
+		player: domain.Player{
 			CountAttempts: attempts,
 		},
-		windows: models.Windows{
-			HangmanStages: models.Stages,
+		windows: domain.Windows{
+			HangmanStages: domain.Stages,
 		},
 	}
 
 	return game
 }
 
-func RandomElememt(array []string) (index int64, element string) {
-	index = time.Now().Unix() % int64(len(array))
-	return index, array[index]
+func (game *Game) Play() {
+	game.windows.Start()
+	game.selectLevelAndCategory()
+	game.displayInitialData()
+
+	for game.player.CountAttempts > 0 && int(game.word.CountGuessedLetters) != len(game.word.Word) {
+		var char string
+		if _, err := fmt.Scan(&char); err != nil {
+			fmt.Print("")
+		}
+
+		game.handleUserInput(char)
+	}
+
+	game.endGame()
 }
 
 func (game *Game) SelectCategory(category int, err error) string {
@@ -111,7 +125,7 @@ func (game *Game) SelectCategory(category int, err error) string {
 		return categories[category-1]
 	}
 
-	_, element := RandomElememt(categories)
+	_, element := random.Elememt(categories)
 
 	return element
 }
@@ -121,22 +135,12 @@ func (game *Game) SelectLevel(level int, err error) string {
 	if err == nil && level > 0 && level <= len(levels) {
 		index = int64(level) - 1
 	} else {
-		index, _ = RandomElememt(levels)
+		index, _ = random.Elememt(levels)
 	}
 
 	game.player.CountAttempts += int(1 - index)
 
 	return levels[index]
-}
-
-func contains(array []rune, element rune) bool {
-	for _, value := range array {
-		if value == element {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (game *Game) selectLevelAndCategory() {
@@ -147,7 +151,7 @@ func (game *Game) selectLevelAndCategory() {
 	category, err := game.player.ChooseCategory()
 	correctCategory := game.SelectCategory(category, err)
 
-	_, randomWord := RandomElememt(game.words[correctCategory][correctLevel])
+	_, randomWord := random.Elememt(game.words[correctCategory][correctLevel])
 	game.word = game.word.NewWord(randomWord, correctCategory, correctLevel)
 }
 
@@ -175,7 +179,7 @@ func (game *Game) handleUserInput(char string) {
 	game.windows.Cursor.ToWord()
 
 	switch {
-	case contains(game.word.Word, letter):
+	case slice.Contains(game.word.Word, letter):
 		game.word.UpdateGuessedLetters(letter)
 	case letter == '?':
 		hint := game.hints[string(game.word.Word)]
@@ -205,21 +209,4 @@ func (game *Game) endGame() {
 	time.Sleep(2 * time.Second)
 
 	game.windows.CleanScreen()
-}
-
-func (game *Game) Play() {
-	game.windows.Start()
-	game.selectLevelAndCategory()
-	game.displayInitialData()
-
-	for game.player.CountAttempts > 0 && int(game.word.CountGuessedLetters) != len(game.word.Word) {
-		var char string
-		if _, err := fmt.Scan(&char); err != nil {
-			fmt.Print("")
-		}
-
-		game.handleUserInput(char)
-	}
-
-	game.endGame()
 }

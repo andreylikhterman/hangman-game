@@ -1,10 +1,12 @@
 package main
 
 import (
-	hangman "github.com/backend-academy-2024-go-template/internal/application"
+	hangman "hangman/internal/application"
 )
 
 func main() {
-	game := hangman.NewGame(6)
+	attempts := 6
+
+	game := hangman.NewGame(attempts)
 	game.Play()
 }

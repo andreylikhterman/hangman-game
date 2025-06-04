@@ -1,4 +1,4 @@
-module github.com/backend-academy-2024-go-template
+module hangman
 
 go 1.22.6
 

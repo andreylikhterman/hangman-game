@@ -1,4 +1,4 @@
-package hangman
+package domain
 
 import (
 	"fmt"

@@ -3,7 +3,8 @@ package hangman_test
 import (
 	"testing"
 
-	gamepkg "github.com/backend-academy-2024-go-template/internal/application"
+	game "hangman/internal/application"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +30,7 @@ var categories = []string{"животные", "еда", "техника"}
 var levels = []string{"легкий", "средний", "сложный"}
 
 func TestSelectCategory(t *testing.T) {
-	game := gamepkg.NewGame(5)
+	game := game.NewGame(5)
 
 	category := game.SelectCategory(1, nil)
 	assert.Equal(t, "животные", category, "Ожидалась категория 'животные'")
@@ -39,21 +40,11 @@ func TestSelectCategory(t *testing.T) {
 }
 
 func TestSelectLevel(t *testing.T) {
-	game := gamepkg.NewGame(5)
+	game := game.NewGame(5)
 
 	level := game.SelectLevel(2, nil)
 	assert.Equal(t, "средний", level, "Ожидался уровень 'средний'")
 
 	level = game.SelectLevel(14, nil)
 	assert.Contains(t, levels, level, "Выбран неверный уровень")
-}
-
-func TestSelectWord(t *testing.T) {
-	gamepkg.NewGame(5)
-
-	category := "животные"
-	level := "легкий"
-
-	_, randomWord := gamepkg.RandomElememt(dictionary[category][level])
-	assert.Contains(t, dictionary[category][level], randomWord, "Слово не принадлежит к категории и уровню")
 }

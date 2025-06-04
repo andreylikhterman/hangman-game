@@ -7,7 +7,7 @@ import (
 )
 
 func PrintWindow(nameFile string) {
-	bytes, err := os.ReadFile(fmt.Sprintf("internal/domain/GameWindows/%s", nameFile))
+	bytes, err := os.ReadFile(fmt.Sprintf("internal/domain/game_windows/%s", nameFile))
 	if err != nil {
 		log.Fatal(err)
 	}

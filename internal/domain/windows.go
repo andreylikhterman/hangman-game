@@ -1,11 +1,11 @@
-package hangman
+package domain
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
-	output "github.com/backend-academy-2024-go-template/internal/infrastructure"
+	output "hangman/internal/infrastructure"
 )
 
 const strikethroughtText string = "а̶б̶в̶г̶д̶е̶ж̶з̶и̶й̶к̶л̶м̶н̶о̶п̶р̶с̶т̶у̶ф̶х̶ц̶ч̶ш̶щ̶ъ̶ы̶ь̶э̶ю̶я̶"
@@ -101,66 +101,9 @@ var Stages = []string{
   ___________||___`,
 }
 
-type cursor struct{}
-
-func (*cursor) ToChoose() {
-	fmt.Print("\033[H")
-	fmt.Print("\033[13B\033[29C")
-}
-
-func (*cursor) ToInput() {
-	fmt.Print("\033[H")
-	fmt.Print("\033[2B\033[18C")
-}
-
-func (*cursor) ToAttempts() {
-	fmt.Print("\033[H")
-	fmt.Print("\033[15B\033[21C")
-}
-
-func (*cursor) ToHangman() {
-	fmt.Print("\033[H")
-	fmt.Print("\033[5B\033[20C")
-}
-
-func (*cursor) ToAlphabet() {
-	fmt.Print("\033[H")
-	fmt.Print("\033[3B\033[43C")
-}
-
-func (*cursor) ToWord() {
-	fmt.Print("\033[H")
-	fmt.Print("\033[8B\033[3C")
-}
-
-func (*cursor) ToHint(hint string) {
-	fmt.Print("\033[H")
-	fmt.Printf("\033[15B\033[%dC", 56-len([]rune(hint)))
-}
-
-func (*cursor) HideCursor() {
-	fmt.Print("\033[?25l")
-}
-
-func (*cursor) ShowCursor() {
-	fmt.Print("\033[?25h")
-}
-
-func (*cursor) ChangeCursor() {
-	fmt.Print("\033[6 q")
-}
-
-func (*cursor) Down(count rune) {
-	fmt.Printf("\033[%dB", count)
-}
-
-func (*cursor) Right(count rune) {
-	fmt.Printf("\033[%dC", count)
-}
-
 type Windows struct {
 	HangmanStages []string
-	Cursor        cursor
+	Cursor        Cursor
 }
 
 func (*Windows) CleanScreen() {
